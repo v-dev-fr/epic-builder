@@ -5,6 +5,8 @@ import { Subscription, combineLatest } from 'rxjs';
 import { BaseChartDirective } from 'ng2-charts';
 import { ChartConfiguration, ChartData, ChartType } from 'chart.js';
 import { Preferences } from '@capacitor/preferences';
+import { LocalNotifications } from '@capacitor/local-notifications';
+import { Capacitor } from '@capacitor/core';
 
 import { DataService } from '../../services/data.service';
 import { ExerciseLog, WeightLog, Settings, DietLog, HabitLog, Quest } from '../../models/types';
@@ -234,6 +236,38 @@ export class DashboardComponent implements OnInit, OnDestroy {
       notes: '1-Tap 10 Min Recovery Walk'
     };
     this.dataService.addExercise(log);
+  }
+
+  async testLocalNotification() {
+    if (!Capacitor.isNativePlatform()) {
+      alert("Local notifications only work on an Android/iOS device.");
+      return;
+    }
+
+    const permStatus = await LocalNotifications.checkPermissions();
+    if (permStatus.display !== 'granted') {
+      await LocalNotifications.requestPermissions();
+    }
+
+    const fireDate = new Date();
+    fireDate.setSeconds(fireDate.getSeconds() + 5);
+
+    await LocalNotifications.schedule({
+      notifications: [
+        {
+          title: "Test Successful!",
+          body: "If you see and hear this, your notifications are working perfectly.",
+          id: 9999,
+          channelId: 'epic-builder-custom', // Use the channel we created in reminders service
+          schedule: { at: fireDate }
+        }
+      ]
+    });
+    
+    // Optional: visual feedback that the test was scheduled
+    this.insightTitle = 'Test Initiated';
+    this.insightText = 'Notification scheduled. Please minimize the app or turn off your screen within 5 seconds.';
+    this.insightIcon = 'star';
   }
 
   // --- Weekly Insights Engine ---

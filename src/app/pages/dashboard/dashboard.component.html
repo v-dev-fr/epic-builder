@@ -1,4 +1,10 @@
 <div class="animate-fade-in py-2 pb-32">
+
+  <!-- Toast Notification -->
+  <div *ngIf="toastVisible" class="fixed top-4 left-1/2 -translate-x-1/2 z-[100] px-5 py-3 bg-epic-gold text-epic-900 rounded-xl font-bold text-sm shadow-[0_4px_20px_rgba(251,191,36,0.4)] animate-fade-in">
+    {{ toastMessage }}
+  </div>
+
   <div class="flex justify-between items-center mb-6">
     <div>
       <h1 class="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-epic-gold to-yellow-200">Epic Builder</h1>
@@ -7,16 +13,19 @@
       </a>
     </div>
     <div class="flex items-center gap-3">
+      <!-- Streak Badge -->
+      <div *ngIf="streakDays > 0" class="flex flex-col items-center bg-orange-900/40 border border-orange-500/30 rounded-xl px-3 py-1.5">
+        <span class="text-lg font-bold text-orange-400 leading-none">{{ streakDays }}</span>
+        <span class="text-[8px] text-orange-400/70 font-bold uppercase tracking-wider">streak</span>
+      </div>
       <div class="text-right">
         <div class="text-[10px] text-gray-500 font-bold uppercase tracking-wider">Legend Score</div>
         <div class="text-2xl font-bold font-serif" [ngClass]="recoveryScoreColor">{{ recoveryScore }}<span class="text-sm text-gray-500">/100</span></div>
       </div>
       <div class="relative w-12 h-12 flex items-center justify-center shrink-0">
-        <!-- Background Circle -->
         <svg class="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
           <path class="text-epic-700" stroke-width="3" stroke="currentColor" fill="none"
                 d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-          <!-- Progress Circle -->
           <path [ngClass]="recoveryScoreColor" stroke-width="3" stroke-dasharray="100, 100" [attr.stroke-dasharray]="recoveryScore + ', 100'" stroke="currentColor" fill="none"
                 d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
         </svg>
@@ -26,7 +35,7 @@
 
   <!-- Summary Cards -->
   <div class="grid grid-cols-2 gap-4 mb-8">
-    
+
     <!-- Weight Card -->
     <div class="bg-epic-800 p-4 rounded-2xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)] border border-epic-700 flex flex-col justify-between group hover:border-epic-gold/30 transition-colors">
       <div class="flex items-center text-gray-400 mb-2">
@@ -43,18 +52,31 @@
       </div>
     </div>
 
-    <!-- Pain Card -->
+    <!-- Pain Card with Trend Arrow -->
     <div class="bg-epic-800 p-4 rounded-2xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)] border border-epic-700 flex flex-col justify-between group hover:border-epic-ruby/30 transition-colors">
       <div class="flex items-center text-gray-400 mb-2">
         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg>
         <span class="text-xs font-medium uppercase tracking-wider">Latest Pain</span>
       </div>
-      <div class="flex items-end gap-1">
+      <div class="flex items-end gap-2">
         <span class="text-3xl font-bold font-serif text-white">{{ latestPainScore }}</span>
         <span class="text-sm font-medium text-epic-gold_dim mb-1">/ 10</span>
+        <!-- Pain Trend Arrow -->
+        <span *ngIf="painTrend === 'down'" class="mb-1 flex items-center text-green-400" title="Pain decreasing">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path></svg>
+        </span>
+        <span *ngIf="painTrend === 'up'" class="mb-1 flex items-center text-red-400" title="Pain increasing">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 10l7-7m0 0l7 7m-7-7v18"></path></svg>
+        </span>
+        <span *ngIf="painTrend === 'stable'" class="mb-1 flex items-center text-yellow-400" title="Pain stable">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 12h14"></path></svg>
+        </span>
       </div>
-      <div class="text-[10px] text-gray-500 mt-2 font-medium uppercase tracking-wider">
-        Target: Zero
+      <div class="text-[10px] mt-2 font-medium uppercase tracking-wider" [ngClass]="{'text-green-500': painTrend==='down', 'text-red-500': painTrend==='up', 'text-yellow-500': painTrend==='stable', 'text-gray-500': painTrend==='none'}">
+        <span *ngIf="painTrend === 'down'">Trending down</span>
+        <span *ngIf="painTrend === 'up'">Trending up</span>
+        <span *ngIf="painTrend === 'stable'">Holding steady</span>
+        <span *ngIf="painTrend === 'none'">Target: Zero</span>
       </div>
     </div>
 
@@ -69,6 +91,21 @@
     </div>
     <div class="w-12 h-12 rounded-full border border-epic-gold/20 flex items-center justify-center relative z-10 bg-epic-900/50">
       <svg class="w-6 h-6 text-epic-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+    </div>
+  </div>
+
+  <!-- Quick Habits (1-Tap from Dashboard) -->
+  <div class="mb-8" *ngIf="habitTemplates.length > 0">
+    <h2 class="text-lg font-serif font-bold mb-4 text-white">Today's Disciplines</h2>
+    <div class="flex flex-wrap gap-2">
+      <button *ngFor="let ht of habitTemplates"
+        (click)="toggleQuickHabit(ht)"
+        class="px-4 py-2.5 rounded-xl text-sm font-bold transition-all active:scale-95 border flex items-center gap-2"
+        [ngClass]="isHabitDoneToday(ht.id) ? 'bg-green-900/50 border-green-500/50 text-green-300' : 'bg-epic-800 border-epic-700 text-gray-300 hover:border-epic-gold/40'">
+        <svg *ngIf="isHabitDoneToday(ht.id)" class="w-4 h-4 text-green-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg>
+        <svg *ngIf="!isHabitDoneToday(ht.id)" class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke-width="2"></circle></svg>
+        {{ ht.name }}
+      </button>
     </div>
   </div>
 
@@ -99,7 +136,8 @@
       <!-- TEST NOTIFICATION BUTTON -->
       <button (click)="testLocalNotification()" class="col-span-2 bg-purple-900/40 hover:bg-purple-800/60 border border-purple-500/30 p-3 rounded-xl flex items-center gap-3 transition-colors active:scale-95 text-left mt-1">
         <div class="w-10 h-10 rounded-full bg-purple-500/20 text-purple-400 flex items-center justify-center shrink-0">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>        </div>
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
+        </div>
         <div>
           <div class="font-bold text-purple-200 text-sm">Test Notification</div>
           <div class="text-[10px] text-purple-400 font-medium">Fires in 5 seconds</div>
@@ -176,7 +214,7 @@
       </div>
       <h3 class="font-bold text-gray-100 font-serif">{{ insightTitle }}</h3>
     </div>
-    
+
     <p class="text-sm text-gray-400 leading-relaxed relative z-10">
       {{ insightText }}
     </p>
@@ -192,7 +230,7 @@
         </div>
         <span class="text-[11px] uppercase tracking-wider font-semibold text-gray-300 text-center">Train</span>
       </a>
-      
+
       <a routerLink="/diet" class="flex flex-col items-center justify-center bg-epic-800 py-4 px-2 rounded-xl border border-epic-700 hover:border-green-500/50 active:scale-95 transition-all group">
         <div class="w-10 h-10 rounded-full border border-green-500/20 bg-epic-900 group-hover:bg-green-500/10 text-green-500 flex items-center justify-center mb-2 transition-colors">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
@@ -206,11 +244,11 @@
         </div>
         <span class="text-[11px] uppercase tracking-wider font-semibold text-gray-300 text-center">Measure</span>
       </a>
-    </div> <!-- Closes grid grid-cols-3 -->
-  </div> <!-- Closes mb-6 section -->
+    </div>
+  </div>
 
   <!-- Navigation Portals -->
-  <div class="mb-4">
+  <div class="mb-6">
     <h2 class="text-lg font-serif font-bold mb-4 text-white">The Forge</h2>
     <div class="grid grid-cols-2 gap-3">
       <a routerLink="/habits" class="flex flex-col items-center justify-center bg-epic-800 p-3 rounded-xl border border-epic-gold/30 hover:border-epic-gold/60 active:scale-95 transition-all group text-center h-full shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)]">
@@ -220,7 +258,7 @@
         <h3 class="font-bold text-epic-gold font-serif leading-tight text-sm">Disciplines</h3>
         <span class="text-[9px] uppercase tracking-wider font-semibold text-gray-400 mt-1">Streaks & Logs</span>
       </a>
-      
+
       <a routerLink="/reminders" class="flex flex-col items-center justify-center bg-epic-800 p-3 rounded-xl border border-epic-gold/30 hover:border-epic-gold/60 active:scale-95 transition-all group text-center h-full shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)]">
         <div class="w-10 h-10 rounded-full border border-epic-gold/20 bg-epic-900 group-hover:bg-epic-gold/10 text-epic-gold flex items-center justify-center mb-2 transition-colors">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
@@ -229,6 +267,20 @@
         <span class="text-[9px] uppercase tracking-wider font-semibold text-gray-400 mt-1">Automated Nudges</span>
       </a>
     </div>
+  </div>
+
+  <!-- Share with Doctor -->
+  <div class="mb-4">
+    <button (click)="exportForDoctor()" class="w-full bg-epic-800 hover:bg-epic-700 border border-epic-700 hover:border-teal-500/40 rounded-2xl p-4 flex items-center gap-4 transition-all active:scale-[0.98] group">
+      <div class="w-12 h-12 rounded-full bg-teal-900/40 border border-teal-500/30 text-teal-400 flex items-center justify-center shrink-0 group-hover:bg-teal-800/50 transition-colors">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+      </div>
+      <div class="text-left">
+        <div class="font-bold text-teal-300 text-sm">Share with Doctor</div>
+        <div class="text-[10px] text-gray-400 font-medium">Export 7-day pain, exercise & weight summary</div>
+      </div>
+      <svg class="w-5 h-5 text-gray-600 ml-auto group-hover:text-teal-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"></path></svg>
+    </button>
   </div>
 
 </div>

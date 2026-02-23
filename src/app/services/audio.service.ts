@@ -4,7 +4,7 @@ import { Injectable } from '@angular/core';
   providedIn: 'root'
 })
 export class AudioService {
-  private audioElement: HTMLAudioElement | null = null;
+  private audioContext: AudioContext | null = null;
   private enabled = true;
 
   constructor() {
@@ -14,43 +14,61 @@ export class AudioService {
   private initAudio() {
     if (typeof document === 'undefined') return;
 
-    // Create a hidden audio element in the DOM 
-    // This is much more reliable on restrictive mobile browsers than pure JS Audio objects
-    this.audioElement = document.createElement('audio');
-    this.audioElement.src = 'data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA=';
-    this.audioElement.volume = 0.5;
-    this.audioElement.style.display = 'none';
-    this.audioElement.setAttribute('playsinline', '');
-    document.body.appendChild(this.audioElement);
-    
-    // Attempt to unlock audio on first interaction anywhere
-    const unlockAudio = () => {
-      if (this.audioElement) {
-        this.audioElement.play().then(() => {
-          this.audioElement!.pause();
-          this.audioElement!.currentTime = 0;
-        }).catch(() => {});
+    const unlock = () => {
+      if (!this.audioContext) {
+        this.audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
       }
-      document.removeEventListener('touchstart', unlockAudio);
-      document.removeEventListener('click', unlockAudio);
+      // Resume if suspended (autoplay policy)
+      if (this.audioContext.state === 'suspended') {
+        this.audioContext.resume();
+      }
+      document.removeEventListener('touchstart', unlock);
+      document.removeEventListener('click', unlock);
     };
-    
-    document.addEventListener('touchstart', unlockAudio, { once: true });
-    document.addEventListener('click', unlockAudio, { once: true });
+
+    document.addEventListener('touchstart', unlock, { once: true });
+    document.addEventListener('click', unlock, { once: true });
   }
 
   playClick() {
-    if (!this.enabled || !this.audioElement) return;
-    try {
-      this.audioElement.currentTime = 0;
-      const playPromise = this.audioElement.play();
-      if (playPromise !== undefined) {
-        playPromise.catch(() => {
-          // Ignore autoplay blocked errors
-        });
+    if (!this.enabled) return;
+
+    // Lazily create context on first play if not yet initialized
+    if (!this.audioContext) {
+      try {
+        this.audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+      } catch {
+        return;
       }
-    } catch (e) {
-      console.warn('Audio playback failed', e);
+    }
+
+    if (this.audioContext.state === 'suspended') {
+      this.audioContext.resume();
+    }
+
+    try {
+      const ctx = this.audioContext;
+      const now = ctx.currentTime;
+
+      // Create a short, crisp click using an oscillator
+      const oscillator = ctx.createOscillator();
+      const gainNode = ctx.createGain();
+
+      oscillator.connect(gainNode);
+      gainNode.connect(ctx.destination);
+
+      // Quick frequency sweep for a "tick" sound
+      oscillator.frequency.setValueAtTime(1200, now);
+      oscillator.frequency.exponentialRampToValueAtTime(300, now + 0.04);
+
+      // Quick volume envelope
+      gainNode.gain.setValueAtTime(0.15, now);
+      gainNode.gain.exponentialRampToValueAtTime(0.001, now + 0.06);
+
+      oscillator.start(now);
+      oscillator.stop(now + 0.06);
+    } catch {
+      // Ignore audio errors gracefully
     }
   }
 }

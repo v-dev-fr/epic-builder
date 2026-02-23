@@ -37,6 +37,15 @@ export class RemindersService {
       await LocalNotifications.cancel({ notifications: pending.notifications });
     }
 
+    // Create a notification channel for Android
+    await LocalNotifications.createChannel({
+      id: 'epic-builder-custom',
+      name: 'Custom User Reminders',
+      description: 'Custom timed notifications for logs and habits',
+      importance: 4, // High importance
+      visibility: 1, // Public
+    });
+
     const notificationsToSchedule = [];
     
     // We assign a dynamic ID sequentially just for simple mapping here
@@ -53,6 +62,7 @@ export class RemindersService {
           title: "Epic Builder - Ritual",
           body: reminder.title,
           id: notifId++,
+          channelId: 'epic-builder-custom',
           schedule: { on: { hour: hours, minute: minutes } }
         });
       } 
@@ -63,6 +73,7 @@ export class RemindersService {
             title: "Epic Builder - Quest",
             body: reminder.title,
             id: notifId++,
+            channelId: 'epic-builder-custom',
             schedule: { on: { weekday: d, hour: hours, minute: minutes } }
           });
         }
@@ -74,6 +85,7 @@ export class RemindersService {
             title: "Epic Builder - Vitality check",
             body: reminder.title,
             id: notifId++,
+            channelId: 'epic-builder-custom',
             schedule: { 
               // Simplistic representation for repeating every hour/minute using standard API options
               // The local notifications plugin supports 'every' but with specific types like 'day', 'week', 'hour', 'minute'.

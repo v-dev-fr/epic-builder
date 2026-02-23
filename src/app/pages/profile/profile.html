@@ -1,0 +1,107 @@
+<div class="px-4 pb-24 pt-6 max-w-md mx-auto w-full box-border lg:max-w-2xl text-gray-200">
+  <div class="flex justify-between items-center mb-6">
+    <h1 class="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-epic-gold to-yellow-200">Hero Profile</h1>
+  </div>
+
+  <!-- Hero Stats -->
+  <div class="bg-gradient-to-r from-epic-800 to-epic-900 rounded-2xl p-6 border border-epic-700 shadow-md mb-8 relative overflow-hidden">
+    <div class="absolute -right-10 -top-10 w-32 h-32 bg-epic-gold/5 rounded-full blur-2xl"></div>
+    <div class="relative z-10 flex items-center justify-between mb-4">
+      <div>
+        <h2 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Current Rank</h2>
+        <div class="text-4xl font-serif font-bold text-epic-gold">Level {{ level }}</div>
+      </div>
+      <div class="text-right">
+        <div class="text-lg font-bold text-white">{{ xp }} <span class="text-sm font-normal text-gray-400">/ {{ level * 100 }} XP</span></div>
+      </div>
+    </div>
+    
+    <!-- XP Bar -->
+    <div class="w-full bg-epic-900 rounded-full h-3 mb-1 border border-epic-700/50">
+      <div class="bg-gradient-to-r from-epic-gold to-yellow-400 h-3 rounded-full transition-all duration-1000 shadow-[0_0_10px_rgba(251,191,36,0.3)]" [style.width.%]="progressPercentage"></div>
+    </div>
+    <div class="text-xs text-center text-gray-500 mt-2">{{ (level * 100) - xp }} XP to next level</div>
+  </div>
+
+  <!-- Manage Quests Area -->
+  <div class="mb-8">
+    <div class="flex justify-between items-center mb-4">
+      <h2 class="text-lg font-serif font-bold text-white">Bounties & Quests</h2>
+      <button (click)="showAddQuest = true" class="px-3 py-1.5 bg-epic-gold/10 text-epic-gold rounded-lg text-xs font-bold hover:bg-epic-gold hover:text-epic-900 transition-colors border border-epic-gold/30">
+        + Post Bounty
+      </button>
+    </div>
+
+    <!-- Active List -->
+    <h3 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Active</h3>
+    <div class="space-y-3 mb-6">
+      <div *ngIf="activeQuests.length === 0" class="text-center py-6 text-gray-500 bg-epic-800/50 rounded-xl border border-epic-700/50">
+        No active bounties.
+      </div>
+      <div *ngFor="let q of activeQuests" class="bg-epic-800 p-4 rounded-xl shadow-md border border-epic-700 flex justify-between items-center">
+        <div>
+          <div class="font-bold text-sm text-gray-200">{{ q.title }}</div>
+          <div class="text-xs text-gray-400">{{ q.description }}</div>
+        </div>
+        <div class="text-epic-gold font-bold text-sm">{{ q.xpPoints }} XP</div>
+      </div>
+    </div>
+
+    <!-- Completed List -->
+    <h3 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Completed Legends</h3>
+    <div class="space-y-3">
+      <div *ngIf="completedQuests.length === 0" class="text-center py-6 text-gray-500 bg-epic-800/50 rounded-xl border border-epic-700/50">
+        No completed bounties yet.
+      </div>
+      <div *ngFor="let q of completedQuests" class="bg-epic-800/50 p-3 rounded-xl border border-epic-700/30 flex justify-between items-center opacity-75">
+        <div class="flex items-center gap-3">
+          <div class="w-6 h-6 rounded-full bg-green-500/20 text-green-500 flex items-center justify-center shrink-0">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+          </div>
+          <div class="font-bold text-sm text-gray-400 line-through">{{ q.title }}</div>
+        </div>
+        <div class="text-xs text-gray-500">{{ q.completedDate | date:'shortDate' }}</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Add Quest Modal -->
+<div *ngIf="showAddQuest" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+  <div class="bg-epic-800 w-full max-w-sm rounded-3xl border border-epic-700 shadow-[0_0_50px_rgba(0,0,0,0.8)] overflow-hidden">
+    <div class="p-6">
+      <h2 class="text-xl font-bold font-serif text-white mb-6">Post New Bounty</h2>
+      
+      <div class="space-y-4">
+        <div>
+          <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Quest Title</label>
+          <input type="text" [(ngModel)]="newQuest.title" placeholder="e.g. Conquer a 5K Run" class="w-full bg-epic-900 border border-epic-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-epic-gold focus:ring-1 focus:ring-epic-gold transition-colors">
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Description</label>
+          <textarea [(ngModel)]="newQuest.description" rows="2" placeholder="Details..." class="w-full bg-epic-900 border border-epic-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-epic-gold focus:ring-1 focus:ring-epic-gold transition-colors resize-none"></textarea>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Reward (XP)</label>
+          <select [(ngModel)]="newQuest.xpPoints" class="w-full bg-epic-900 border border-epic-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-epic-gold focus:ring-1 focus:ring-epic-gold transition-colors appearance-none">
+            <option [ngValue]="25">25 XP - Minor Task</option>
+            <option [ngValue]="50">50 XP - Standard Quest</option>
+            <option [ngValue]="100">100 XP - Major Milestone</option>
+            <option [ngValue]="200">200 XP - Epic Boss Fight</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="flex gap-3 mt-8">
+        <button (click)="showAddQuest = false" class="flex-1 py-3 bg-epic-900 text-gray-300 rounded-xl font-medium border border-epic-700 hover:bg-epic-800 transition-colors">
+          Cancel
+        </button>
+        <button (click)="saveQuest()" class="flex-1 py-3 bg-gradient-to-r from-epic-gold to-yellow-400 text-epic-900 rounded-xl font-bold shadow-[0_4px_15px_rgba(251,191,36,0.2)] hover:scale-105 active:scale-95 transition-all">
+          Post Bounty
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

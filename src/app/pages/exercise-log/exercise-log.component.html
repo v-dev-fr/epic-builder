@@ -1,0 +1,170 @@
+<div class="animate-fade-in py-2 h-full flex flex-col">
+  <div class="flex justify-between items-center mb-4">
+    <h1 class="text-3xl font-bold font-serif text-transparent bg-clip-text bg-gradient-to-r from-epic-gold to-yellow-200 text-white">Exercise</h1>
+    
+    <!-- Tab Navigation -->
+    <div class="flex bg-epic-900 p-1 rounded-lg">
+      <button 
+        (click)="activeTab = 'log'"
+        [class.bg-white]="activeTab === 'log'"
+        [class.dark:bg-gray-700]="activeTab === 'log'"
+        [class.shadow-md]="activeTab === 'log'"
+        class="px-4 py-1 text-sm font-medium rounded-md transition-all text-gray-300">
+        Log
+      </button>
+      <button 
+        (click)="activeTab = 'history'"
+        [class.bg-white]="activeTab === 'history'"
+        [class.dark:bg-gray-700]="activeTab === 'history'"
+        [class.shadow-md]="activeTab === 'history'"
+        class="px-4 py-1 text-sm font-medium rounded-md transition-all text-gray-300">
+        History
+      </button>
+    </div>
+  </div>
+
+  <!-- Log View -->
+  <div *ngIf="activeTab === 'log'" class="flex-1 overflow-y-auto pb-4">
+    <div class="bg-epic-800 rounded-2xl shadow-md shadow-black/40 border border-epic-700 p-4">
+      
+      <!-- Date & Completed -->
+      <div class="flex gap-4 mb-4">
+        <div class="flex-1">
+          <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Date</label>
+          <input type="date" [(ngModel)]="newLog.date" class="w-full bg-epic-900 border border-epic-700 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-epic-gold focus:border-epic-gold outline-none text-white transition-shadow">
+        </div>
+        <div class="flex flex-col items-center justify-center pt-5">
+          <label class="flex items-center cursor-pointer">
+            <input type="checkbox" [(ngModel)]="newLog.completed" class="sr-only peer">
+            <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none dark:bg-gray-700 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+          </label>
+          <span class="text-xs text-gray-400 mt-1">Completed</span>
+        </div>
+      </div>
+
+      <!-- Template Select -->
+      <div class="mb-4">
+        <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Exercise Template</label>
+        <select [(ngModel)]="selectedTemplateId" (change)="onTemplateChange()" class="w-full bg-epic-900 border border-epic-700 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-epic-gold focus:border-epic-gold outline-none text-white appearance-none">
+          <option *ngFor="let t of templates" [value]="t.id">{{t.name}}</option>
+        </select>
+      </div>
+
+      <!-- Built-in Timer -->
+      <div class="mb-4 bg-epic-900 border border-epic-700 rounded-xl p-4 transition-all" [class.border-epic-gold]="timerActive" [class.shadow-[0_0_15px_rgba(251,191,36,0.15)]]="timerActive">
+        <div class="flex items-center justify-between">
+          <div>
+            <div class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Active Timer</div>
+            <div class="text-3xl font-bold font-mono tracking-wider transition-colors" [class.text-epic-gold]="timerActive" [class.text-gray-300]="!timerActive">
+              {{ formattedTime }}
+            </div>
+          </div>
+          <div class="flex items-center gap-2">
+            <button *ngIf="timeElapsedSeconds > 0" (click)="resetTimer()" class="w-12 h-12 rounded-full bg-gray-700 hover:bg-gray-600 flex items-center justify-center text-white transition-colors">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+            </button>
+            <button (click)="toggleTimer()" class="w-14 h-14 rounded-full flex items-center justify-center transition-all shadow-md active:scale-95" [class.bg-epic-ruby]="timerActive" [class.shadow-epic-ruby/30]="timerActive" [class.bg-epic-gold]="!timerActive" [class.shadow-epic-gold/30]="!timerActive" [class.text-white]="timerActive" [class.text-epic-900]="!timerActive">
+              <svg *ngIf="!timerActive" class="w-6 h-6 ml-1" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+              <svg *ngIf="timerActive" class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Strength Logic -->
+      <div *ngIf="!currentTemplate.isCardio" class="grid grid-cols-2 gap-4 mb-4">
+        <div>
+          <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Sets</label>
+          <input type="number" [(ngModel)]="newLog.sets" class="w-full bg-epic-900 border border-epic-700 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-epic-gold focus:border-epic-gold outline-none text-white">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Reps / Time</label>
+          <input type="number" [(ngModel)]="newLog.reps" class="w-full bg-epic-900 border border-epic-700 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-epic-gold focus:border-epic-gold outline-none text-white">
+        </div>
+      </div>
+
+      <!-- Cardio Logic -->
+      <div *ngIf="currentTemplate.isCardio" class="mb-4">
+        <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Cardio Duration (min)</label>
+        <input type="number" [(ngModel)]="newLog.cardioDuration" class="w-full bg-epic-900 border border-epic-700 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-epic-gold focus:border-epic-gold outline-none text-white">
+      </div>
+
+      <!-- Pain Logic -->
+      <div class="mb-6 p-4 rounded-xl bg-orange-50 dark:bg-orange-900/10 border border-orange-100 dark:border-orange-900/30">
+        <h3 class="text-xs font-semibold text-orange-800 dark:text-orange-400 uppercase tracking-wider mb-3">Pain Scale (0-10)</h3>
+        
+        <div class="mb-4">
+          <div class="flex justify-between text-xs text-orange-600 dark:text-orange-400 mb-1">
+            <span>Before Exercise</span>
+            <span class="font-bold">{{newLog.painBefore}}</span>
+          </div>
+          <input type="range" min="0" max="10" [(ngModel)]="newLog.painBefore" class="w-full h-2 bg-orange-200 rounded-lg appearance-none cursor-pointer dark:bg-orange-800/50">
+        </div>
+        
+        <div>
+          <div class="flex justify-between text-xs text-orange-600 dark:text-orange-400 mb-1">
+            <span>After Exercise</span>
+            <span class="font-bold">{{newLog.painAfter}}</span>
+          </div>
+          <input type="range" min="0" max="10" [(ngModel)]="newLog.painAfter" class="w-full h-2 bg-orange-200 rounded-lg appearance-none cursor-pointer dark:bg-orange-800/50">
+        </div>
+      </div>
+
+      <!-- Notes -->
+      <div class="mb-6">
+        <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Notes</label>
+        <textarea [(ngModel)]="newLog.notes" rows="2" class="w-full bg-epic-900 border border-epic-700 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-epic-gold focus:border-epic-gold outline-none text-white resize-none" placeholder="Any pain specifics?"></textarea>
+      </div>
+
+      <button (click)="saveLog()" class="w-full py-3 bg-epic-gold hover:bg-epic-gold_dim text-epic-900 rounded-xl font-bold shadow-md shadow-epic-gold/20 transition-colors active:scale-95">
+        Save Log
+      </button>
+
+    </div>
+  </div>
+
+  <!-- History View -->
+  <div *ngIf="activeTab === 'history'" class="flex-1 overflow-y-auto pb-4">
+    <div *ngIf="history.length === 0" class="text-center text-gray-400 py-10">
+      <svg class="w-12 h-12 mx-auto mb-3 opacity-20" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+      <p>No exercises logged yet.</p>
+    </div>
+
+    <div class="space-y-3">
+      <div *ngFor="let item of history" class="bg-epic-800 p-4 rounded-xl shadow-md shadow-black/40 border border-epic-700">
+        <div class="flex justify-between items-start mb-2">
+          <div>
+            <h3 class="font-bold text-white">{{ item.name }}</h3>
+            <p class="text-xs text-gray-500">{{ item.date | date:'mediumDate' }}</p>
+          </div>
+          <span [class]="item.completed ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400'" class="px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wider">
+            {{ item.completed ? 'Done' : 'Missed' }}
+          </span>
+        </div>
+        
+        <div class="flex gap-4 mt-3">
+          <div class="flex-1 bg-epic-900 rounded-lg p-2 text-center">
+            <div class="text-[10px] text-gray-500 uppercase">Sets / Reps</div>
+            <div class="font-semibold text-sm dark:text-gray-300">
+              <ng-container *ngIf="item.cardioDuration else strengthBlock">
+                {{ item.cardioDuration }} min
+              </ng-container>
+              <ng-template #strengthBlock>
+                {{ item.sets }} × {{ item.reps }}
+              </ng-template>
+            </div>
+          </div>
+          <div class="flex-1 bg-orange-50 dark:bg-orange-900/10 rounded-lg p-2 text-center border border-orange-100 dark:border-orange-900/20">
+            <div class="text-[10px] text-orange-600 dark:text-orange-400 uppercase">Pain \u2192</div>
+            <div class="font-semibold text-sm text-orange-700 dark:text-orange-300">
+              {{ item.painBefore }} to {{ item.painAfter }}
+            </div>
+          </div>
+        </div>
+        
+        <p *ngIf="item.notes" class="mt-3 text-xs text-gray-400 italic">"{{ item.notes }}"</p>
+      </div>
+    </div>
+  </div>
+
+</div>

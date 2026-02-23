@@ -1,59 +1,58 @@
-# SpineRecoveryTracker
+# Spine Recovery Tracker
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 21.1.4.
+A Progressive Web App (PWA) built with Angular 19+ and TailwindCSS 4, packaged with Capacitor for native Android deployment. Functions entirely offline utilizing localized storage (Capacitor Filesystem / LocalStorage fallback).
 
-## Development server
+## Features
 
-To start a local development server, run:
+- **Dashboard**: Summary metrics and charts mapping weight and pain progression.
+- **Exercise Log**: Track daily routines (strength/cardio) with built-in templates and pain logs.
+- **Diet Log**: Easily record daily meals.
+- **Weight Tracker**: Monitor weight drops and BMI.
+- **Food Reference**: Built-in library with basic macros + local custom entries.
+- **Settings**: Manage goals, UI unit preferences, and backup data.
+- **Offline First**: Zero dependency on a remote backend.
 
-```bash
-ng serve
-```
+## Local Development (Testing on Web)
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+1. Ensure Node.js 22 is installed.
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+3. Start the Angular dev server:
+   ```bash
+   npm start
+   ```
+4. Open the application in your browser (usually `http://localhost:4200`). UI is optimized for mobile views (open DevTools and switch to mobile view mode).
 
-## Code scaffolding
+## Building for Android (APK)
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+To package the PWA as an Android native application using Capacitor, follow these instructions:
 
-```bash
-ng generate component component-name
-```
+1. Build the production Angular app:
+   ```bash
+   npm run build
+   ```
+2. Sync the web code to the Capacitor native project:
+   ```bash
+   npx cap sync android
+   ```
+3. Open the Android project in Android Studio to build the APK:
+   ```bash
+   npx cap open android
+   ```
+4. In Android Studio, wait for Gradle sync to complete, then navigate to `Build > Build Bundle(s) / APK(s) > Build APK(s)`.
+   Alternatively, run from terminal if Android SDK is configured:
+   ```bash
+   cd android && ./gradlew assembleDebug
+   ```
+5. Install the generated `.apk` file located in `android/app/build/outputs/apk/debug/app-debug.apk` onto an Android device.
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+## Dependencies Included
 
-```bash
-ng generate --help
-```
-
-## Building
-
-To build the project run:
-
-```bash
-ng build
-```
-
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
-
-## Running unit tests
-
-To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
-
-```bash
-ng test
-```
-
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+- `@angular/core`: Next-gen web framework.
+- `tailwindcss`: Utility-first CSS framework natively loaded.
+- `ng2-charts` / `chart.js`: For dashboard progress visualization.
+- `@capacitor/core`: Hybrid native bridge.
+- `@capacitor/filesystem`: Handling offline data serialization storage.
+- `@capacitor/local-notifications`: Scheduling daily logging reminders.

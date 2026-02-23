@@ -1,0 +1,15 @@
+{
+  "name": "spine-recovery-tracker",
+  "short_name": "spine-recovery-tracker",
+  "display": "standalone",
+  "scope": "./",
+  "start_url": "./",
+  "icons": [
+    {
+      "src": "icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable any"
+    }
+  ]
+}

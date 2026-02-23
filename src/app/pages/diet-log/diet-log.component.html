@@ -1,0 +1,113 @@
+<div class="animate-fade-in py-2 h-full flex flex-col">
+  <div class="flex justify-between items-center mb-4">
+    <h1 class="text-3xl font-bold font-serif text-transparent bg-clip-text bg-gradient-to-r from-epic-gold to-yellow-200 text-white">Diet</h1>
+    
+    <!-- Tab Navigation -->
+    <div class="flex bg-epic-900 p-1 rounded-lg">
+      <button 
+        (click)="activeTab = 'log'"
+        [class.bg-white]="activeTab === 'log'"
+        [class.dark:bg-gray-700]="activeTab === 'log'"
+        [class.shadow-md]="activeTab === 'log'"
+        class="px-4 py-1 text-sm font-medium rounded-md transition-all text-gray-300">
+        Log
+      </button>
+      <button 
+        (click)="activeTab = 'history'"
+        [class.bg-white]="activeTab === 'history'"
+        [class.dark:bg-gray-700]="activeTab === 'history'"
+        [class.shadow-md]="activeTab === 'history'"
+        class="px-4 py-1 text-sm font-medium rounded-md transition-all text-gray-300">
+        History
+      </button>
+    </div>
+  </div>
+
+  <!-- Today's Total Summary -->
+  <div class="bg-gradient-to-r from-green-500 to-emerald-600 rounded-2xl p-4 mb-6 text-white shadow-md flex items-center justify-between">
+    <div>
+      <h3 class="font-bold text-lg">Today's Total</h3>
+      <p class="text-green-100 text-sm">Calories Consumed</p>
+    </div>
+    <div class="text-3xl font-bold">
+      {{ todayTotalCalories }} <span class="text-base font-medium opacity-80 text-green-100">kcal</span>
+    </div>
+  </div>
+
+  <!-- Log View -->
+  <div *ngIf="activeTab === 'log'" class="flex-1 overflow-y-auto pb-4">
+    <div class="bg-epic-800 rounded-2xl shadow-md shadow-black/40 border border-epic-700 p-4">
+      
+      <!-- Date & Category -->
+      <div class="grid grid-cols-2 gap-4 mb-4">
+        <div>
+          <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Date</label>
+          <input type="date" [(ngModel)]="newLog.date" class="w-full bg-epic-900 border border-epic-700 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-epic-gold focus:border-epic-gold outline-none text-white transition-shadow">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Meal</label>
+          <select [(ngModel)]="newLog.category" class="w-full bg-epic-900 border border-epic-700 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-epic-gold focus:border-epic-gold outline-none text-white appearance-none">
+            <option *ngFor="let c of categories" [value]="c">{{c}}</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Food Name -->
+      <div class="mb-4">
+        <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Food Name</label>
+        <input type="text" [(ngModel)]="newLog.foodName" placeholder="e.g. Oatmeal with Berries" class="w-full bg-epic-900 border border-epic-700 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-epic-gold focus:border-epic-gold outline-none text-white transition-shadow">
+      </div>
+
+      <!-- Portion & Calories -->
+      <div class="grid grid-cols-2 gap-4 mb-4">
+        <div>
+          <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Portion</label>
+          <input type="text" [(ngModel)]="newLog.portion" placeholder="e.g. 1 Bowl" class="w-full bg-epic-900 border border-epic-700 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-epic-gold focus:border-epic-gold outline-none text-white">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Calories (kcal)</label>
+          <input type="number" [(ngModel)]="newLog.calories" placeholder="e.g. 350" class="w-full bg-epic-900 border border-epic-700 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-epic-gold focus:border-epic-gold outline-none text-white">
+        </div>
+      </div>
+
+      <!-- Notes -->
+      <div class="mb-6">
+        <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Notes</label>
+        <textarea [(ngModel)]="newLog.notes" rows="2" class="w-full bg-epic-900 border border-epic-700 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-epic-gold focus:border-epic-gold outline-none text-white resize-none" placeholder="Any pain flares after eating?"></textarea>
+      </div>
+
+      <button (click)="saveLog()" [disabled]="!newLog.foodName || !newLog.calories" class="w-full py-3 bg-green-600 hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white rounded-xl font-bold shadow-md shadow-green-500/30 transition-colors active:scale-95">
+        Save Log
+      </button>
+
+    </div>
+  </div>
+
+  <!-- History View -->
+  <div *ngIf="activeTab === 'history'" class="flex-1 overflow-y-auto pb-4">
+    <div *ngIf="history.length === 0" class="text-center text-gray-400 py-10">
+      <svg class="w-12 h-12 mx-auto mb-3 opacity-20 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+      <p>No meals logged yet.</p>
+    </div>
+
+    <div class="space-y-3">
+      <div *ngFor="let item of history" class="bg-epic-800 p-4 rounded-xl shadow-md shadow-black/40 border border-epic-700 flex justify-between items-center">
+        <div>
+          <h3 class="font-bold text-white">{{ item.foodName }}</h3>
+          <div class="flex items-center text-xs text-gray-400 mt-1 gap-2">
+            <span class="bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 px-2 py-0.5 rounded uppercase font-bold tracking-wider text-[9px]">{{ item.category }}</span>
+            <span>{{ item.portion }}</span>
+            <span>&middot;</span>
+            <span>{{ item.date | date:'shortDate' }}</span>
+          </div>
+          <p *ngIf="item.notes" class="mt-2 text-xs text-gray-400 italic font-medium">"{{ item.notes }}"</p>
+        </div>
+        <div class="text-right ml-4 shrink-0">
+          <div class="text-lg font-bold text-gray-200">{{ item.calories }}</div>
+          <div class="text-[10px] text-gray-400 uppercase font-semibold">kcal</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>

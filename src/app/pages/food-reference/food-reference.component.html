@@ -1,0 +1,102 @@
+<div class="animate-fade-in py-2 h-full flex flex-col">
+  <div class="flex justify-between items-center mb-4">
+    <h1 class="text-3xl font-bold font-serif text-transparent bg-clip-text bg-gradient-to-r from-epic-gold to-yellow-200 text-white">Food Ref</h1>
+    
+    <!-- Tab Navigation -->
+    <div class="flex bg-epic-900 p-1 rounded-lg">
+      <button 
+        (click)="activeTab = 'search'"
+        [class.bg-white]="activeTab === 'search'"
+        [class.dark:bg-gray-700]="activeTab === 'search'"
+        [class.shadow-md]="activeTab === 'search'"
+        class="px-4 py-1 text-sm font-medium rounded-md transition-all text-gray-300">
+        Search
+      </button>
+      <button 
+        (click)="activeTab = 'add'"
+        [class.bg-white]="activeTab === 'add'"
+        [class.dark:bg-gray-700]="activeTab === 'add'"
+        [class.shadow-md]="activeTab === 'add'"
+        class="px-4 py-1 text-sm font-medium rounded-md transition-all text-gray-300">
+        Add Custom
+      </button>
+    </div>
+  </div>
+
+  <!-- Search View -->
+  <div *ngIf="activeTab === 'search'" class="flex-1 overflow-y-auto pb-4 flex flex-col">
+    <!-- Search Bar -->
+    <div class="relative mb-6">
+      <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+        </svg>
+      </div>
+      <input type="text" (input)="onSearchChange($event)" placeholder="Search foods..." class="block w-full pl-10 pr-3 py-3 border border-epic-700 rounded-xl leading-5 bg-epic-800 placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-epic-gold focus:border-epic-gold focus:border-blue-500 sm:text-sm text-white shadow-md shadow-black/40 transition-shadow">
+    </div>
+
+    <div *ngIf="filteredFoods.length === 0" class="flex flex-col items-center justify-center flex-1 text-gray-400">
+      <svg class="w-12 h-12 mb-3 opacity-20 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
+      <p>No foods found. Try adding a custom food.</p>
+      <button (click)="activeTab = 'add'" class="mt-4 px-4 py-2 bg-epic-gold/10 text-epic-gold text-shadow-md shadow-black/40 rounded-lg text-sm font-semibold hover:bg-blue-100 transition-colors">Add Custom Entry</button>
+    </div>
+
+    <!-- Results List -->
+    <div class="space-y-3">
+      <div *ngFor="let item of filteredFoods" class="bg-epic-800 p-4 rounded-xl shadow-md shadow-black/40 border border-epic-700 flex justify-between items-center group hover:border-blue-300 dark:hover:border-blue-700 transition-colors">
+        <div>
+          <h3 class="font-bold text-white">{{ item.name }}</h3>
+          <p class="text-xs text-gray-400 mt-1 uppercase tracking-wider">{{ item.servingSize }}</p>
+        </div>
+        
+        <div class="flex items-center gap-4 text-right">
+          <div>
+            <div class="text-[10px] text-gray-400 uppercase font-semibold">Protein</div>
+            <div class="font-bold text-sm text-epic-gold text-shadow-md shadow-black/40">{{ item.protein }}g</div>
+          </div>
+          <div class="w-px h-8 bg-gray-200 dark:bg-gray-700"></div>
+          <div>
+            <div class="text-[10px] text-gray-400 uppercase font-semibold">Calories</div>
+            <div class="font-bold text-lg text-gray-200">{{ item.calories }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Custom View -->
+  <div *ngIf="activeTab === 'add'" class="flex-1 overflow-y-auto pb-4">
+    <div class="bg-epic-800 rounded-2xl shadow-md shadow-black/40 border border-epic-700 p-4">
+      
+      <!-- Name -->
+      <div class="mb-4">
+        <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Food Name</label>
+        <input type="text" [(ngModel)]="newFood.name" placeholder="e.g. Scrambled Eggs" class="w-full bg-epic-900 border border-epic-700 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-epic-gold focus:border-epic-gold outline-none text-white transition-shadow">
+      </div>
+
+      <!-- Serving Size -->
+      <div class="mb-4">
+        <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Serving Size</label>
+        <input type="text" [(ngModel)]="newFood.servingSize" placeholder="e.g. 2 large eggs" class="w-full bg-epic-900 border border-epic-700 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-epic-gold focus:border-epic-gold outline-none text-white transition-shadow">
+      </div>
+
+      <!-- Macros -->
+      <div class="grid grid-cols-2 gap-4 mb-6">
+        <div>
+          <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Calories (kcal)</label>
+          <input type="number" step="1" [(ngModel)]="newFood.calories" class="w-full bg-epic-900 border border-epic-700 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-epic-gold focus:border-epic-gold outline-none text-white font-bold text-center">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Protein (g)</label>
+          <input type="number" step="0.5" [(ngModel)]="newFood.protein" class="w-full bg-epic-900 border border-epic-700 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-epic-gold focus:border-epic-gold outline-none text-white font-bold text-center">
+        </div>
+      </div>
+
+      <button (click)="saveFood()" [disabled]="!newFood.name || newFood.calories === null" class="w-full py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white rounded-xl font-bold shadow-md shadow-epic-gold/20 transition-colors active:scale-95">
+        Add Custom Food
+      </button>
+
+    </div>
+  </div>
+
+</div>

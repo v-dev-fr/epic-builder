@@ -6,9 +6,8 @@ const config: CapacitorConfig = {
   webDir: 'dist/spine-recovery-tracker/browser',
   plugins: {
     LocalNotifications: {
-      smallIcon: 'ic_launcher_round',
+      smallIcon: 'ic_stat_icon',
       iconColor: '#3b82f6',
-      sound: '',
     },
   },
 };

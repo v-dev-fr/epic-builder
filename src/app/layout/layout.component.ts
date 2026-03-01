@@ -7,6 +7,7 @@ import { CheckIn } from '../models/types';
 import { Subscription } from 'rxjs';
 import { HostListener } from '@angular/core';
 import { AudioService } from '../services/audio.service';
+import { RemindersService } from '../services/reminders';
 import { trigger, transition, style, animate, query } from '@angular/animations';
 
 @Component({
@@ -33,7 +34,12 @@ import { trigger, transition, style, animate, query } from '@angular/animations'
 })
 export class LayoutComponent implements OnInit, OnDestroy {
   showDailyCheckIn = false;
-  
+
+  // Alarm overlay
+  showAlarm = false;
+  alarmTitle = '';
+  alarmBody = '';
+
   checkInData: Partial<CheckIn> = {
     painLevel: 5,
     energyLevel: 3,
@@ -41,11 +47,15 @@ export class LayoutComponent implements OnInit, OnDestroy {
   };
 
   moods: ('bad' | 'neutral' | 'good' | 'great')[] = ['bad', 'neutral', 'good', 'great'];
-  
+
   private sub = new Subscription();
   private todayStr = new Date().toISOString().split('T')[0];
 
-  constructor(private dataService: DataService, private audioService: AudioService) {}
+  constructor(
+    private dataService: DataService,
+    private audioService: AudioService,
+    private remindersService: RemindersService
+  ) {}
 
   @HostListener('click', ['$event'])
   onClick(event: Event) {
@@ -73,15 +83,29 @@ export class LayoutComponent implements OnInit, OnDestroy {
 
     this.sub.add(
       this.dataService.settings$.subscribe(settings => {
-        // Apply theme to body
         const themeClass = `theme-${settings.theme || 'obsidian'}`;
-        document.body.className = themeClass; // Replaces existing classes, we will let Tailwind handle background in styles.css
+        document.body.className = themeClass;
+      })
+    );
+
+    // Subscribe to alarm events from RemindersService
+    this.sub.add(
+      this.remindersService.alarm$.subscribe(alarm => {
+        if (alarm) {
+          this.alarmTitle = alarm.title;
+          this.alarmBody = alarm.body;
+          this.showAlarm = true;
+          this.audioService.playAlarm();
+        } else {
+          this.showAlarm = false;
+        }
       })
     );
   }
 
   ngOnDestroy() {
     this.sub.unsubscribe();
+    this.audioService.stopAlarm();
   }
 
   submitCheckIn() {
@@ -95,5 +119,15 @@ export class LayoutComponent implements OnInit, OnDestroy {
 
     this.dataService.addCheckIn(newCheckIn);
     this.showDailyCheckIn = false;
+  }
+
+  acceptAlarm() {
+    this.audioService.stopAlarm();
+    this.remindersService.clearAlarm();
+  }
+
+  dismissAlarm() {
+    this.audioService.stopAlarm();
+    this.remindersService.clearAlarm();
   }
 }

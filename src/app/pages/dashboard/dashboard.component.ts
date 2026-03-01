@@ -423,7 +423,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     }
 
     await LocalNotifications.createChannel({
-      id: 'epic-custom-v3',
+      id: 'epic-custom-v4',
       name: 'Custom Reminders',
       description: 'Custom timed notifications with sound',
       importance: 5,
@@ -441,7 +441,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
           title: "Test Successful!",
           body: "If you see and hear this, your notifications are working perfectly.",
           id: 9999,
-          channelId: 'epic-custom-v3',
+          channelId: 'epic-custom-v4',
           smallIcon: 'ic_stat_icon',
           iconColor: '#FBBF24',
           schedule: { at: fireDate }

@@ -3,20 +3,27 @@ import { Reminder } from '../models/types';
 import { DataService } from './data.service';
 import { LocalNotifications } from '@capacitor/local-notifications';
 import { Capacitor } from '@capacitor/core';
-import { Subscription } from 'rxjs';
+import { BehaviorSubject, Subscription } from 'rxjs';
 
 // Channel IDs - versioned because Android locks channel settings permanently.
 // If sound/vibration is broken, bump the version suffix and old channels get deleted.
-const CHANNEL_DAILY = 'epic-daily-v3';
-const CHANNEL_CUSTOM = 'epic-custom-v3';
+const CHANNEL_DAILY = 'epic-daily-v4';
+const CHANNEL_CUSTOM = 'epic-custom-v4';
 
-// Old channel IDs to clean up (were created without sound)
+// Old channel IDs to clean up (were created with broken sound settings)
 const OLD_CHANNELS = [
   'epic-builder-reminders',
   'epic-builder-custom',
   'epic-daily-v2',
   'epic-custom-v2',
+  'epic-daily-v3',
+  'epic-custom-v3',
 ];
+
+export interface AlarmEvent {
+  title: string;
+  body: string;
+}
 
 @Injectable({
   providedIn: 'root'
@@ -25,6 +32,10 @@ export class RemindersService {
   private reminders: Reminder[] = [];
   private sub: Subscription = new Subscription();
   private initialized = false;
+
+  // Alarm overlay event - layout subscribes to this
+  private alarmSubject = new BehaviorSubject<AlarmEvent | null>(null);
+  alarm$ = this.alarmSubject.asObservable();
 
   constructor(private dataService: DataService) {}
 
@@ -45,6 +56,29 @@ export class RemindersService {
     await this.deleteOldChannels();
     await this.createChannels();
 
+    // Listen for notifications received while app is in foreground
+    // This triggers the full-screen alarm overlay
+    LocalNotifications.addListener('localNotificationReceived', (notification) => {
+      // Don't show alarm for test notifications
+      if (notification.id === 9999) return;
+
+      this.alarmSubject.next({
+        title: notification.title || 'Epic Builder',
+        body: notification.body || 'Time for your ritual!',
+      });
+    });
+
+    // Listen for when user taps on a notification (from background/lock screen)
+    LocalNotifications.addListener('localNotificationActionPerformed', (action) => {
+      // App was opened from notification - show the alarm overlay too
+      if (action.notification.id === 9999) return;
+
+      this.alarmSubject.next({
+        title: action.notification.title || 'Epic Builder',
+        body: action.notification.body || 'Time for your ritual!',
+      });
+    });
+
     // Subscribe to reminder changes and schedule them
     this.sub = this.dataService.reminders$.subscribe(rem => {
       this.reminders = rem;
@@ -52,13 +86,15 @@ export class RemindersService {
     });
   }
 
+  clearAlarm() {
+    this.alarmSubject.next(null);
+  }
+
   private async deleteOldChannels() {
     for (const id of OLD_CHANNELS) {
       try {
         await LocalNotifications.deleteChannel({ id });
-      } catch {
-        // Channel may not exist, ignore
-      }
+      } catch {}
     }
   }
 
@@ -103,7 +139,6 @@ export class RemindersService {
       }
 
       // Also clear already-delivered notifications from the tray
-      // so deleted reminders don't linger in the notification shade
       await LocalNotifications.removeAllDeliveredNotifications();
 
       const notificationsToSchedule: any[] = [];
